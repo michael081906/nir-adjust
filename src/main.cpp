@@ -19,10 +19,8 @@ PointCloud pointcloud_in;
 std::vector<geometry_msgs::Twist> pfm0;
 std::vector<geometry_msgs::Twist> pfm1;
 std::vector<geometry_msgs::Twist> pfm2;
-ros::NodeHandle n;
-ros::Publisher traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/2019_animal_study/nir_points",1);
-pcl::PointCloud<pcl::PointXYZI> output_traj;
-int seq = 0;
+pcl::PointCloud<pcl::PointXYZI> output_traj_callback;
+bool receive= false;
 
 pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm)
 {
@@ -51,8 +49,7 @@ void callback(const sensor_msgs::PointCloud2Ptr& cloud) {
   pfm0.clear();
   pfm1.clear();
   pfm2.clear();
-  output_traj.clear();
-  
+  output_traj_callback.clear();
   int index_=0;
   for(int i=0;i<pointcloud_in.size();i++)
   {
@@ -78,41 +75,52 @@ void callback(const sensor_msgs::PointCloud2Ptr& cloud) {
   {
   temp_p = find_average(pfm0);
   temp_p.intensity=0;
-  output_traj.push_back(temp_p);
+  output_traj_callback.push_back(temp_p);
 }
 if(pfm1.size()>0)
 {
   temp_p = find_average(pfm1);
   temp_p.intensity=1;
-  output_traj.push_back(temp_p);
+  output_traj_callback.push_back(temp_p);
 }
 if(pfm2.size()>0)
 {
   temp_p = find_average(pfm2);
   temp_p.intensity=2;
-  output_traj.push_back(temp_p);
+  output_traj_callback.push_back(temp_p);
 }
 
-
-  std_msgs::Header header;
-  header.stamp = ros::Time::now();
-  header.seq = seq++; // is this correct
-  header.frame_id = std::string("world");
-  output_traj.header = pcl_conversions::toPCL(header);
-  traj_pub_.publish(output_traj);
+receive= true;
 
 }
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "nir_adjust");
+  ros::NodeHandle n;
+  ros::Publisher traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/2019_animal_study/nir_points",1);
   ros::Subscriber sub_pcl = n.subscribe("/see_scope/overlay/cog", 1, &callback);
   ros::Rate loop_rate(0.5);
+  int seq = 0;
+  pcl::PointCloud<pcl::PointXYZI> output_traj;
 
   while (ros::ok())
   {
-      ros::spinOnce();
-      loop_rate.sleep();
+    if(receive)
+    {
+    output_traj.clear();
+    output_traj = output_traj_callback;
+    std::cout << "receive= "<< receive << std::endl;
+    std_msgs::Header header;
+    header.stamp = ros::Time::now();
+    header.seq = seq++; // is this correct
+    header.frame_id = std::string("world");
+    output_traj.header = pcl_conversions::toPCL(header);
+    traj_pub_.publish(output_traj);
+    receive = false;
+  }
+    ros::spinOnce();
+    loop_rate.sleep();
   }
 
   return 0;
