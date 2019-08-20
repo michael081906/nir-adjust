@@ -11,7 +11,8 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <algorithm>
 #include <pcl_conversions/pcl_conversions.h> // used for "pcl::fromROSMsg"
-
+#include <dynamic_reconfigure/server.h>
+#include <nir_adjust/nir_adjustmentConfig.h>
 
 
 typedef pcl::PointCloud<pcl::PointXYZI> PointCloud;
@@ -22,7 +23,11 @@ std::vector<geometry_msgs::Twist> pfm2;
 pcl::PointCloud<pcl::PointXYZI> output_traj_callback;
 bool receive= false;
 
-pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm)
+double config_m0_x = 0.0, config_m0_y = 0.0, config_m0_z = 0.0;
+double config_m1_x = 0.0, config_m1_y = 0.0, config_m1_z = 0.0;
+double config_m2_x = 0.0, config_m2_y = 0.0, config_m2_z = 0.0;
+
+pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm, double offset_x, double offset_y, double offset_z)
 {
   double x_=0;
   double y_=0;
@@ -34,9 +39,9 @@ pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm)
     y_ = y_ + pfm[i].linear.y;
     z_ = z_ + pfm[i].linear.z;
   }
-  final.x = x_/pfm.size();
-  final.y = y_/pfm.size();
-  final.z = z_/pfm.size();
+  final.x = offset_x + x_/pfm.size();
+  final.y = offset_y + y_/pfm.size();
+  final.z = offset_z + z_/pfm.size();
   std::cout << final.x << " , " << final.y << " , " << final.z << std::endl;
   return final;
 }
@@ -73,24 +78,44 @@ void callback(const sensor_msgs::PointCloud2Ptr& cloud) {
   pcl::PointXYZI temp_p;
   if(pfm0.size()>0)
   {
-  temp_p = find_average(pfm0);
+  temp_p = find_average(pfm0 , config_m0_x, config_m0_y ,config_m0_z);
   temp_p.intensity=0;
   output_traj_callback.push_back(temp_p);
 }
 if(pfm1.size()>0)
 {
-  temp_p = find_average(pfm1);
+  temp_p = find_average(pfm1, config_m1_x, config_m1_y ,config_m1_z);
   temp_p.intensity=1;
   output_traj_callback.push_back(temp_p);
 }
 if(pfm2.size()>0)
 {
-  temp_p = find_average(pfm2);
+  temp_p = find_average(pfm2, config_m2_x, config_m2_y ,config_m2_z);
   temp_p.intensity=2;
   output_traj_callback.push_back(temp_p);
 }
 
 receive= true;
+
+}
+
+void callback_d(nir_adjust::nir_adjustmentConfig &config, uint32_t level) {
+ ROS_INFO("Reconfigure Request: %f %f %f - %f %f %f - %f %f %f",
+            config.m0_x, config.m0_y,config.m0_z,
+            config.m1_x, config.m1_y,config.m1_z,
+            config.m2_x, config.m2_y,config.m2_z);
+
+            config_m0_x = config.m0_x;
+            config_m0_y = config.m0_y;
+            config_m0_z = config.m0_z;
+
+            config_m1_x = config.m1_x;
+            config_m1_y = config.m1_y;
+            config_m1_z = config.m1_z;
+
+            config_m2_x = config.m2_x;
+            config_m2_y = config.m2_y;
+            config_m2_z = config.m2_z;
 
 }
 
@@ -100,6 +125,10 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::Publisher traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/2019_animal_study/nir_points",1);
   ros::Subscriber sub_pcl = n.subscribe("/see_scope/overlay/cog", 1, &callback);
+  dynamic_reconfigure::Server<nir_adjust::nir_adjustmentConfig> server;
+  dynamic_reconfigure::Server<nir_adjust::nir_adjustmentConfig>::CallbackType f;
+  f = boost::bind(&callback_d, _1, _2);
+  server.setCallback(f);
   ros::Rate loop_rate(0.5);
   int seq = 0;
   pcl::PointCloud<pcl::PointXYZI> output_traj;
