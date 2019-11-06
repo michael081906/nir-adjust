@@ -123,13 +123,13 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "nir_adjust");
   ros::NodeHandle n;
-  ros::Publisher traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/2019_animal_study/nir_points",1);
+  ros::Publisher traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/see_scope/overlay_filtered/cog",1);
   ros::Subscriber sub_pcl = n.subscribe("/see_scope/overlay/cog", 1, &callback);
   dynamic_reconfigure::Server<nir_adjust::nir_adjustmentConfig> server;
   dynamic_reconfigure::Server<nir_adjust::nir_adjustmentConfig>::CallbackType f;
   f = boost::bind(&callback_d, _1, _2);
   server.setCallback(f);
-  ros::Rate loop_rate(0.5);
+  ros::Rate loop_rate(10);
   int seq = 0;
   pcl::PointCloud<pcl::PointXYZI> output_traj;
 
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     std_msgs::Header header;
     header.stamp = ros::Time::now();
     header.seq = seq++; // is this correct
-    header.frame_id = std::string("world");
+    header.frame_id = std::string("mono");
     output_traj.header = pcl_conversions::toPCL(header);
     traj_pub_.publish(output_traj);
     receive = false;

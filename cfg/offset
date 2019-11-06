@@ -1,0 +1,33 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      m0_x: -0.001
+      m0_y: -0.0065
+      m0_z: 0.0
+      m1_x: 0.0
+      m1_y: -0.0065
+      m1_z: 0.0
+      m2_x: 0.0
+      m2_y: -0.0073
+      m2_z: 0.0
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      state: true
+      type: ''
+    state: []
+  m0_x: -0.001
+  m0_y: -0.0065
+  m0_z: 0.0
+  m1_x: 0.0
+  m1_y: -0.0065
+  m1_z: 0.0
+  m2_x: 0.0
+  m2_y: -0.0073
+  m2_z: 0.0
+state: []
