@@ -73,6 +73,9 @@ void callback(const sensor_msgs::PointCloud2Ptr& cloud) {
       case 2:
       pfm2.push_back(temp_);
       break;
+      default:
+      
+      break; 
     }// end switch
   }// end for
   pcl::PointXYZI temp_p;
@@ -142,7 +145,7 @@ int main(int argc, char **argv)
     std::cout << "receive= "<< receive << std::endl;
     std_msgs::Header header;
     header.stamp = ros::Time::now();
-    header.seq = seq++; // is this correct
+    header.seq = seq++; // is this correct?
     header.frame_id = std::string("mono");
     output_traj.header = pcl_conversions::toPCL(header);
     traj_pub_.publish(output_traj);
