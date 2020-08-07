@@ -10,6 +10,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl_ros/transforms.h>  
 #include <pcl_ros/point_cloud.h>
+#include <pcl/common/centroid.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <algorithm>
@@ -18,22 +19,45 @@
 #include <nir_adjust/nir_adjustmentConfig.h>
 
 
-int marker_number_global = 20;
-
-typedef pcl::PointCloud<pcl::PointXYZI> PointCloud;
-PointCloud pointcloud_in;
-std::vector<geometry_msgs::Twist> pfm0;
-pcl::PointCloud<pcl::PointXYZI> output_traj_callback;
-
-bool receive= false;
-bool _group_exists = false;
-ros::NodeHandle n;
-double config_m0_x = 0.0, config_m0_y = 0.0, config_m0_z = 0.0;
-int number_marker;
+class nir_adjust
+{
+  private:
+  ros::NodeHandle n;
+  ros::Publisher traj_pub_;
+  ros::Subscriber sub_pcl;
+  ros::Subscriber sub_offset;
 
 
+  bool receive= false;
+  bool _group_exists = false;
+  int marker_number_global = 20;
 
-pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm)
+  double config_m0_x = 0.0, config_m0_y = 0.0, config_m0_z = 0.0;
+  int number_marker = 0;  
+
+  PointCloud pointcloud_in;
+  PointCloud output_traj_callback;
+  std::vector<geometry_msgs::Twist> pfm0;
+  pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm);
+
+  void callback(const sensor_msgs::PointCloud2Ptr& cloud);
+  void callback_offset(const std_msgs::Float64MultiArray& offset);
+
+  public:
+  nir_adjust();
+  
+  typedef pcl::PointCloud<pcl::PointXYZI> PointCloud;
+
+};
+
+nir_adjust::nir_adjust()
+{
+  traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/see_scope/overlay_filtered/cog",1);
+  sub_pcl = n.subscribe("/see_scope/overlay/cog", 1, &callback);
+  sub_offset = n.subscribe("/array", 1, &callback_offset);
+}
+
+pcl::PointXYZI nir_adjust::find_average(std::vector<geometry_msgs::Twist> pfm)
 {
   double x_;
   double y_;
@@ -52,7 +76,7 @@ pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm)
   return final;
 }
 
-void callback(const sensor_msgs::PointCloud2Ptr& cloud) {
+void nir_adjust::callback(const sensor_msgs::PointCloud2Ptr& cloud) {
 
   pcl::fromROSMsg(*cloud, pointcloud_in);  // copy sensor_msg::Pointcloud message into pcl::PointCloud
   
@@ -102,12 +126,12 @@ void callback(const sensor_msgs::PointCloud2Ptr& cloud) {
         }
        
   }
-
-receive= true;
-
+  
+  output_traj = output_traj_callback;
+  receive= true;
 }
 
-void callback_offset(const std_msgs::Float64MultiArray& offset)
+void nir_adjut::callback_offset(const std_msgs::Float64MultiArray& offset)
 {
   number_marker = offset.layout.data_offset;
   config_m0_x = offset.data[0];
@@ -116,54 +140,15 @@ void callback_offset(const std_msgs::Float64MultiArray& offset)
 
 }
 
-/*void callback_d(nir_adjust::nir_adjustmentConfig &config, uint32_t level) {
- ROS_INFO("Reconfigure Request: %d %f %f %f", config.num_marker,
-            config.x_offset, config.y_offset, config.z_offset);
-            ros::NodeHandle nh;
-            if(number_marker!= config.num_marker)
-            {
-              ROS_INFO_STREAM("Load the parameter here");
-              nh.setParam("/nir_adjust/x_offset", offset_group_[config.num_marker].x_offset);
-              nh.setParam("/nir_adjust/y_offset", offset_group_[config.num_marker].y_offset);
-              nh.setParam("/nir_adjust/z_offset", offset_group_[config.num_marker].z_offset); 
-              number_marker = config.num_marker;
-            }
-            else
-            {
-              ROS_INFO_STREAM("Rest the parameter here");
-              number_marker = config.num_marker;
-              config_m0_x = config.x_offset;
-              config_m0_y = config.y_offset;
-              config_m0_z = config.z_offset;         
-              
-
-            }
-            
-}
-*/
-
-
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "nir_adjust");
-
-  ros::Publisher traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/see_scope/overlay_filtered/cog",1);
-  ros::Subscriber sub_pcl = n.subscribe("/see_scope/overlay/cog", 1, &callback);
-  ros::Subscriber sub_offset = n.subscribe("/array", 1, &callback_offset);
-  //dynamic_reconfigure::Server<nir_adjust::nir_adjustmentConfig> server;
-  //dynamic_reconfigure::Server<nir_adjust::nir_adjustmentConfig>::CallbackType f;
-  //f = boost::bind(&callback_d, _1, _2);
-  //server.setCallback(f);
+void nir_adjust::spin()
+{ 
   ros::Rate loop_rate(10);
   int seq = 0;
-  pcl::PointCloud<pcl::PointXYZI> output_traj;
-
   while (ros::ok())
   {
     if(receive)
     {
     output_traj.clear();
-    output_traj = output_traj_callback;
     std::cout << "receive= "<< receive << std::endl;
     std_msgs::Header header;
     header.stamp = ros::Time::now();
@@ -177,5 +162,12 @@ int main(int argc, char **argv)
     loop_rate.sleep();
   }
 
+
+}
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "nir_adjust");
+  nir_adjust().spin();
   return 0;
 }
