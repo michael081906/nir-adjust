@@ -15,11 +15,12 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <algorithm>
 #include <pcl_conversions/pcl_conversions.h> // used for "pcl::fromROSMsg"
-#include <dynamic_reconfigure/server.h>
-#include <nir_adjust/nir_adjustmentConfig.h>
+//#include <dynamic_reconfigure/server.h>
+//#include <nir_adjust/nir_adjustmentConfig.h>
 
+typedef pcl::PointCloud<pcl::PointXYZI> PointCloud_type;
 
-class nir_adjust
+class nir_adjust_
 {
   private:
   ros::NodeHandle n;
@@ -27,37 +28,42 @@ class nir_adjust
   ros::Subscriber sub_pcl;
   ros::Subscriber sub_offset;
 
-
   bool receive= false;
   bool _group_exists = false;
   int marker_number_global = 20;
-
   double config_m0_x = 0.0, config_m0_y = 0.0, config_m0_z = 0.0;
   int number_marker = 0;  
 
-  PointCloud pointcloud_in;
-  PointCloud output_traj_callback;
+  PointCloud_type pointcloud_in;
+  PointCloud_type output_traj_callback;
+  PointCloud_type output_traj;
   std::vector<geometry_msgs::Twist> pfm0;
-  pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist> pfm);
+  pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist>& pfm);
 
-  void callback(const sensor_msgs::PointCloud2Ptr& cloud);
-  void callback_offset(const std_msgs::Float64MultiArray& offset);
+  void callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud);
+  void callback_offset(const std_msgs::Float64MultiArrayConstPtr& offset);
 
   public:
-  nir_adjust();
-  
-  typedef pcl::PointCloud<pcl::PointXYZI> PointCloud;
-
+  nir_adjust_();
+  void spin();
+  // 2020/8/7 必須要是const..... ex: sensor_msgs::PointCloud2ConstPtr 如果用 sensor_msgs::PointCloud2Ptr 過不了的
+  typedef boost::function<void (const sensor_msgs::PointCloud2ConstPtr& cloud)> pc_t;
+  typedef boost::function<void (const std_msgs::Float64MultiArrayConstPtr& offset)> offest_t;
 };
 
-nir_adjust::nir_adjust()
+nir_adjust_::nir_adjust_()
 {
   traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/see_scope/overlay_filtered/cog",1);
-  sub_pcl = n.subscribe("/see_scope/overlay/cog", 1, &callback);
-  sub_offset = n.subscribe("/array", 1, &callback_offset);
+
+  pc_t pt_sub_cb = boost::bind(&nir_adjust_::callback_pc, this, _1);
+  sub_pcl = n.subscribe("/see_scope/overlay/cog", 1000, pt_sub_cb);
+
+  offest_t offset_sub_callback = boost::bind(&nir_adjust_::callback_offset, this, _1);
+  sub_offset = n.subscribe("/array", 1000, offset_sub_callback);
+
 }
 
-pcl::PointXYZI nir_adjust::find_average(std::vector<geometry_msgs::Twist> pfm)
+pcl::PointXYZI nir_adjust_::find_average(std::vector<geometry_msgs::Twist>& pfm)
 {
   double x_;
   double y_;
@@ -76,7 +82,7 @@ pcl::PointXYZI nir_adjust::find_average(std::vector<geometry_msgs::Twist> pfm)
   return final;
 }
 
-void nir_adjust::callback(const sensor_msgs::PointCloud2Ptr& cloud) {
+void nir_adjust_::callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud) {
 
   pcl::fromROSMsg(*cloud, pointcloud_in);  // copy sensor_msg::Pointcloud message into pcl::PointCloud
   
@@ -131,16 +137,16 @@ void nir_adjust::callback(const sensor_msgs::PointCloud2Ptr& cloud) {
   receive= true;
 }
 
-void nir_adjut::callback_offset(const std_msgs::Float64MultiArray& offset)
+void nir_adjust_::callback_offset(const std_msgs::Float64MultiArrayConstPtr& offset)
 {
-  number_marker = offset.layout.data_offset;
-  config_m0_x = offset.data[0];
-  config_m0_y = offset.data[1];
-  config_m0_z = offset.data[2];
+  number_marker = offset->layout.data_offset;
+  config_m0_x = offset->data[0];
+  config_m0_y = offset->data[1];
+  config_m0_z = offset->data[2];
 
 }
 
-void nir_adjust::spin()
+void nir_adjust_::spin()
 { 
   ros::Rate loop_rate(10);
   int seq = 0;
@@ -168,6 +174,6 @@ void nir_adjust::spin()
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "nir_adjust");
-  nir_adjust().spin();
+  nir_adjust_().spin();
   return 0;
 }
