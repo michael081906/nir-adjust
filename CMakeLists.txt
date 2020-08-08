@@ -208,15 +208,17 @@ add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencpp ${PCL_LIBRARIES} ${
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-#############
-## Testing ##
-#############
+if (CATKIN_ENABLE_TESTING)
+ find_package(rostest REQUIRED)
+ find_package(PCL 1.2 REQUIRED)
+ include_directories(${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+ link_directories(${PCL_LIBRARY_DIRS})
+ add_definitions(${PCL_DEFINITIONS})
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_nir_adjust.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+ catkin_add_gtest(
+   test_nir_adjust
+   test/nir_adjust_test.cpp
+ )
+target_link_libraries(test_nir_adjust ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+endif()
