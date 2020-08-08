@@ -16,6 +16,9 @@ env:
   matrix:
     - ROS_DISTRO=kinetic
 
+notifications:
+  slack: imerse-lcsr:l6DqibemgI7SXDkm9zs9FUUA
+
 before_install:
 
   - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
