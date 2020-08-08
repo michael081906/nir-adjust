@@ -3,23 +3,23 @@ project(nir_adjust)
 
 #--------------------------2020/8/8/Mkam--------------------------------------
 
-#set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Coveralls support
-#option(ROS_CI_COVERALLS "Turn on coveralls support" OFF)
-#option(ROS_CI_COVERALLS_UPLOAD "Upload the generated coveralls json" OFF)
+option(ROS_CI_COVERALLS "Turn on coveralls support" OFF)
+option(ROS_CI_COVERALLS_UPLOAD "Upload the generated coveralls json" OFF)
 
-#if($ENV{ROS_CI_COVERAGE})
-#  set(CMAKE_BUILD_TYPE Debug)
-#  set(ROS_CI_COVERALLS ON)
-#  set(ROS_CI_COVERALLS_UPLOAD ON)
-#endif()
+if($ENV{ROS_CI_COVERAGE})
+  set(CMAKE_BUILD_TYPE Debug)
+  set(ROS_CI_COVERALLS ON)
+  set(ROS_CI_COVERALLS_UPLOAD ON)
+endif()
 
-#if(ROS_CI_COVERALLS)
-#  include(Coveralls)
-#  coveralls_turn_on_coverage()
-#  message(STATUS "coveralls on")
-#endif()
+if(ROS_CI_COVERALLS)
+  include(Coveralls)
+  coveralls_turn_on_coverage()
+  message(STATUS "coveralls on")
+endif()
 
 #------------------------------------------------------------------------------
 
@@ -93,12 +93,12 @@ target_link_libraries(test_nir_adjust ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 endif()
 
 #---------------------2020/8/8 Mkam--------------------------------
-#if (ROS_CI_COVERALLS)
-#  set(COV_FILES)
-#  file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-#  list(APPEND COV_FILES ${SRCS})
-#  file(GLOB_RECURSE HDRS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)
-#  list(APPEND COV_FILES ${HDRS})
-#  coveralls_setup("${COV_FILES}" ${ROS_CI_COVERALLS_UPLOAD})
-#endif()
+if (ROS_CI_COVERALLS)
+  set(COV_FILES)
+  file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+  list(APPEND COV_FILES ${SRCS})
+  file(GLOB_RECURSE HDRS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)
+  list(APPEND COV_FILES ${HDRS})
+  coveralls_setup("${COV_FILES}" ${ROS_CI_COVERALLS_UPLOAD})
+endif()
 #-------------------------------------------------------------------

@@ -12,9 +12,9 @@ env:
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
     - CATKIN_OPTIONS=$CI_SOURCE_PATH/catkin.options
     - ROS_PARALLEL_JOBS='-j8 -l6'
+    - ROS_CI_COVERAGE= true
 
   matrix:
-    - ROS_CI_COVERAGE=true
     - ROS_DISTRO=kinetic
 
 notifications:
