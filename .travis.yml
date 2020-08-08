@@ -15,6 +15,7 @@ env:
 
   matrix:
     - ROS_DISTRO=kinetic
+    - ROS_CI_COVERAGE=true
 
 notifications:
   slack: imerse-lcsr:l6DqibemgI7SXDkm9zs9FUUA
@@ -29,6 +30,8 @@ before_install:
   # Prepare rosdep
   - sudo rosdep init
   - rosdep update
+
+  - pip install --user cpp-coveralls
 
 install:
   # Create catkin workspace
@@ -56,3 +59,4 @@ script:
   # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash
   - catkin_make run_tests && catkin_test_results
+  
