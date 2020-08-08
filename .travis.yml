@@ -66,7 +66,7 @@ script:
   #- cd ..
 
    - catkin_make -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug $([ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS)
-  
+
 # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash
   - catkin_make run_tests -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug && catkin_test_results
