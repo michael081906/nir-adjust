@@ -62,7 +62,6 @@ script:
   #- cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ../src -DCMAKE_INSTALL_PREFIX=../install -DCATKIN_DEVEL_PREFIX=../devel $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
   #- make 
   #- cd ..
-
    - catkin_make -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug $([ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS)
 
 # Run the tests, ensuring the path is set correctly.
