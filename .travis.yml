@@ -72,6 +72,6 @@ script:
 after_script:
   - source devel/setup.bash
   - cd ~/catkin_ws/build
-  - cmake ../src -DCMAKE_INSTALL_PREFIX=../install -DCATKIN_DEVEL_PREFIX=../devel -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug
+  - cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ../src -DCMAKE_INSTALL_PREFIX=../install -DCATKIN_DEVEL_PREFIX=../devel
   - make
   - make coveralls
