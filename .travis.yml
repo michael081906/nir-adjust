@@ -75,3 +75,5 @@ after_script:
   - cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ../src -DCMAKE_INSTALL_PREFIX=../install -DCATKIN_DEVEL_PREFIX=../devel
   - make
   - make coveralls
+after_success:
+  - coveralls --verbose
