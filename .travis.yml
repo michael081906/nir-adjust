@@ -3,8 +3,6 @@ sudo: required
 language: cpp
 compiler:
   - gcc
-os: 
-  -linux
 cache:
   - apt
 env:
