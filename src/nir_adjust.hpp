@@ -18,10 +18,12 @@
 //#include <dynamic_reconfigure/server.h>
 //#include <nir_adjust/nir_adjustmentConfig.h>
 
-typedef pcl::PointCloud<pcl::PointXYZI> PointCloud_type;
 
+template<class T>
 class nir_adjust_
 {
+  typedef pcl::PointCloud<T> PointCloud_type;
+  
   private:
   ros::NodeHandle n;
   ros::Publisher traj_pub_;
@@ -38,7 +40,7 @@ class nir_adjust_
   PointCloud_type output_traj_callback;
   PointCloud_type output_traj;
   std::vector<geometry_msgs::Twist> pfm0;
-  pcl::PointXYZI find_average(std::vector<geometry_msgs::Twist>& pfm);
+  T find_average(std::vector<geometry_msgs::Twist>& pfm);
 
   void callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud);
   void callback_offset(const std_msgs::Float64MultiArrayConstPtr& offset);
@@ -51,9 +53,10 @@ class nir_adjust_
   typedef boost::function<void (const std_msgs::Float64MultiArrayConstPtr& offset)> offest_t;
 };
 
-nir_adjust_::nir_adjust_()
+template<class T>
+nir_adjust_<T>::nir_adjust_()
 {
-  traj_pub_ = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/see_scope/overlay_filtered/cog",1);
+  traj_pub_ = n.advertise<PointCloud_type> ("/see_scope/overlay_filtered/cog",1);
 
   pc_t pt_sub_cb = boost::bind(&nir_adjust_::callback_pc, this, _1);
   sub_pcl = n.subscribe("/see_scope/overlay/cog", 1000, pt_sub_cb);
@@ -63,12 +66,13 @@ nir_adjust_::nir_adjust_()
 
 }
 
-pcl::PointXYZI nir_adjust_::find_average(std::vector<geometry_msgs::Twist>& pfm)
+template<class T>
+T nir_adjust_<T>::find_average(std::vector<geometry_msgs::Twist>& pfm)
 {
   double x_;
   double y_;
   double z_;
-  pcl::PointXYZI final;
+  T final;
   for(int i=0;i<pfm.size();i++)
   {
     x_ = x_ + pfm[i].linear.x;
@@ -82,7 +86,8 @@ pcl::PointXYZI nir_adjust_::find_average(std::vector<geometry_msgs::Twist>& pfm)
   return final;
 }
 
-void nir_adjust_::callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud) {
+template<class T>
+void nir_adjust_<T>::callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud) {
 
   pcl::fromROSMsg(*cloud, pointcloud_in);  // copy sensor_msg::Pointcloud message into pcl::PointCloud
   
@@ -117,7 +122,7 @@ void nir_adjust_::callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud) {
         if(intensity_ == index_) pfm0.push_back(temp_);
         }// end for
         
-        pcl::PointXYZI temp_p;
+        T temp_p;
         if(pfm0.size()>0) 
         {
           temp_p = find_average(pfm0);
@@ -137,7 +142,8 @@ void nir_adjust_::callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud) {
   receive= true;
 }
 
-void nir_adjust_::callback_offset(const std_msgs::Float64MultiArrayConstPtr& offset)
+template <class T>
+void nir_adjust_<T>::callback_offset(const std_msgs::Float64MultiArrayConstPtr& offset)
 {
   number_marker = offset->layout.data_offset;
   config_m0_x = offset->data[0];
@@ -146,7 +152,8 @@ void nir_adjust_::callback_offset(const std_msgs::Float64MultiArrayConstPtr& off
 
 }
 
-void nir_adjust_::spin()
+template <class T>
+void nir_adjust_<T>::spin()
 { 
   ros::Rate loop_rate(10);
   int seq = 0;
