@@ -86,6 +86,14 @@ T nir_adjust_<T>::find_average(std::vector<geometry_msgs::Twist>& pfm)
   return final;
 }
 
+/*
+ This function was written for adjusting pointcloud with type PointXYZI based on its intensity value. 
+ 
+ The index you specify on the GUI is actually the intensity value.
+
+ This means that you need to subscribe PointXYZI pointcloud in order to make this function work.
+
+*/
 template<class T>
 void nir_adjust_<T>::callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud) {
 
