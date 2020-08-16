@@ -64,29 +64,23 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES nir_adjust
-#  CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs
-#  DEPENDS system_lib
+
 )
 
 ###########
 ## Build ##
 ###########
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
+
 include_directories(
-# include
   src/
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/nir_adjust.hpp)
-
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencpp ${PCL_LIBRARIES} ${PROJECT_NAME}_gencfg)
+## -------r01_nir_adjust_node-----------##
+add_executable(${PROJECT_NAME}_r01_nir_adjust_node src/r01_nir_adjust_main.cpp src/r01_nir_adjust.hpp src/pointcloud_adjust_base.hpp)
+target_link_libraries(${PROJECT_NAME}_r01_nir_adjust_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_r01_nir_adjust_node ${PROJECT_NAME}_gencpp ${PCL_LIBRARIES})
 
 
 #############

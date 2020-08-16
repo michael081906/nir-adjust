@@ -1,9 +1,9 @@
 #include "ros/ros.h"
-#include "nir_adjust.hpp"
+#include "r01_nir_adjust.hpp"
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "nir_adjust");
-  nir_adjust_<pcl::PointXYZI>().spin();
+  ros::init(argc, argv, "r01_nir_adjust");
+  r01_nir_adjust<pcl::PointXYZI>().spin();
   return 0;
 }
