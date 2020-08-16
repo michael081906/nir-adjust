@@ -81,7 +81,10 @@ include_directories(
 add_executable(${PROJECT_NAME}_r01_nir_adjust_node src/r01_nir_adjust_main.cpp src/r01_nir_adjust.hpp src/pointcloud_adjust_base.hpp)
 target_link_libraries(${PROJECT_NAME}_r01_nir_adjust_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_r01_nir_adjust_node ${PROJECT_NAME}_gencpp ${PCL_LIBRARIES})
-
+## -------suture_point_adjust_node-----------##
+add_executable(${PROJECT_NAME}_suture_point_adjust_node src/suture_point_adjust_main.cpp src/suture_point_adjust.hpp src/pointcloud_adjust_base.hpp)
+target_link_libraries(${PROJECT_NAME}_suture_point_adjust_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_suture_point_adjust_node ${PROJECT_NAME}_gencpp ${PCL_LIBRARIES})
 
 #############
 ## Tests ##

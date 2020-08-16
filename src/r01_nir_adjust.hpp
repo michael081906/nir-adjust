@@ -9,7 +9,6 @@ class r01_nir_adjust : public pointcloud_adjust_base<T> {
   typedef pointcloud_adjust_base<T> Base;
   private:
   
-  
   T find_average(std::vector<geometry_msgs::Twist>& pfm);
   void callback_pc(const sensor_msgs::PointCloud2ConstPtr& cloud);
   
