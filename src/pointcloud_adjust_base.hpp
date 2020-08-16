@@ -15,8 +15,6 @@
 #include <std_msgs/Float64MultiArray.h>
 #include <algorithm>
 #include <pcl_conversions/pcl_conversions.h> // used for "pcl::fromROSMsg"
-//#include <dynamic_reconfigure/server.h>
-//#include <nir_adjust/nir_adjustmentConfig.h>
 
 
 template<class T>
