@@ -46,7 +46,6 @@ class nir_adjust_
   public:
   nir_adjust_();
   void spin();
-  // 2020/8/7 必須要是const..... ex: sensor_msgs::PointCloud2ConstPtr 如果用 sensor_msgs::PointCloud2Ptr 過不了的
   typedef boost::function<void (const sensor_msgs::PointCloud2ConstPtr& cloud)> pc_t;
   typedef boost::function<void (const std_msgs::Float64MultiArrayConstPtr& offset)> offest_t;
 };
